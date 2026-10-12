@@ -1,0 +1,17 @@
+# Keep pinned versions moving: a pin without updates becomes a known-vulnerable pin.
+# cooldown: wait 7 days before proposing a brand-new release, so a hijacked release
+# (like the March 2026 Trivy incident) has time to be detected and pulled first.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    schedule: {interval: weekly}
+    cooldown: {default-days: 7}
+  - package-ecosystem: docker
+    directory: "/"
+    schedule: {interval: weekly}
+    cooldown: {default-days: 7}
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule: {interval: weekly}
+    cooldown: {default-days: 7}

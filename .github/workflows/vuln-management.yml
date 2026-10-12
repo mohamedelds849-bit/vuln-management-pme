@@ -1,0 +1,74 @@
+name: vuln-management
+
+# Three jobs:
+#   tests   - unit + end-to-end tests on the committed scans and a dated feed snapshot
+#   weekly  - REAL run: Trivy (official image, pinned by digest) rescans the 3 public images,
+#             today's CISA KEV + EPSS are downloaded, the pipeline decides, reports are
+#             uploaded as artifacts and the gate decides the job's colour.
+#   The ledger produced by the weekly run is uploaded too (the repo is not written from CI).
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 6 * * 1"   # Monday 06:23 UTC: new CVEs, new KEV entries, new EPSS scores every week
+
+permissions:
+  contents: read
+
+env:
+  PYTHONUTF8: "1"
+  # Trivy 0.69.4 and trivy-action <= 0.34.2 were compromised in March 2026 (CVE-2026-33634):
+  # the official image is used at a post-incident version, pinned by digest (same pin as
+  # appsec-devsecops-pipeline).
+  TRIVY_IMAGE: "aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa"
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -r requirements-dev.txt
+      - run: python -m pytest -q
+
+  weekly:
+    needs: tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -r requirements.txt
+      - name: Rescan the three images with Trivy (registry pull, no daemon needed)
+        run: |
+          mkdir -p work/scans
+          for spec in "nginx:1.27|nginx_1.27" "wordpress:6.8-php8.2-apache|wordpress_6.8-php8.2-apache" "mariadb:11.4|mariadb_11.4"; do
+            ref="${spec%%|*}"; name="${spec##*|}"
+            docker run --rm -v "$PWD/work:/work" "$TRIVY_IMAGE" \
+              image --scanners vuln --format json --output "/work/scans/$name.json" --quiet "$ref"
+            python scripts/slim_scan.py "work/scans/$name.json" "data/scans/$name.json"
+          done
+          docker run --rm -v "$PWD:/src" "$TRIVY_IMAGE" \
+            fs --scanners vuln --format json --output /src/work/scans/fs_appsec.json --quiet /src/data/manifests
+          python scripts/slim_scan.py work/scans/fs_appsec.json data/scans/fs_appsec.json
+      - name: Download today's CISA KEV and EPSS
+        run: python -m vmp fetch-feeds --dir data/feeds
+      - name: Decide, update the ledger, write the reports, apply the gate
+        id: run
+        run: python -m vmp run --policy policy.yml --feeds data/feeds --ledger data/ledger.json --out reports
+      - name: Upload reports and ledger
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: vuln-management-${{ github.run_id }}
+          path: |
+            reports/
+            data/ledger.json
+          retention-days: 90
