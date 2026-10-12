@@ -1,0 +1,530 @@
+{
+ "assets": {
+  "db": {
+   "by_priority": {
+    "P1": 0,
+    "P2": 0,
+    "P3": 1,
+    "P4": 75
+   },
+   "criticality": "high",
+   "excepted": 0,
+   "exposure": "internal",
+   "kev": 0,
+   "meta": {
+    "artifact": "mariadb:11.4",
+    "artifact_type": "container_image",
+    "created": "2026-10-12T02:15:51",
+    "eosl": false,
+    "image_id": "sha256:ab3dff582d246358b6f6a1f6212f29ac64609fad883eb3dcfb0a89f6f7d0700e",
+    "os": "ubuntu 24.04",
+    "repo_digests": [
+     "mariadb@sha256:1292844148b311e4ed4300022a996d39083f415a963e970cf47cad1b3b18e3a6"
+    ]
+   },
+   "name": "Base de données commandes et clients",
+   "no_fix": 16,
+   "owner": "Prestataire hébergement",
+   "ref": "mariadb:11.4",
+   "total": 76
+  },
+  "portal-deps": {
+   "by_priority": {
+    "P1": 0,
+    "P2": 0,
+    "P3": 0,
+    "P4": 0
+   },
+   "criticality": "medium",
+   "excepted": 0,
+   "exposure": "internal",
+   "kev": 0,
+   "meta": {
+    "artifact": "data/manifests",
+    "artifact_type": "filesystem",
+    "created": "2026-10-12T02:22:44",
+    "eosl": false,
+    "image_id": "",
+    "os": "",
+    "repo_digests": []
+   },
+   "name": "Portail interne de commandes (dépendances Python)",
+   "no_fix": 0,
+   "owner": "Développeur interne",
+   "ref": "data/manifests/requirements.txt (copie de appsec-devsecops-pipeline)",
+   "total": 0
+  },
+  "web-app": {
+   "by_priority": {
+    "P1": 3,
+    "P2": 78,
+    "P3": 760,
+    "P4": 1658
+   },
+   "criticality": "high",
+   "excepted": 6258,
+   "exposure": "internet",
+   "kev": 3,
+   "meta": {
+    "artifact": "wordpress:6.8-php8.2-apache",
+    "artifact_type": "container_image",
+    "created": "2026-10-12T02:15:39",
+    "eosl": false,
+    "image_id": "sha256:b1c4ef27a7a85b2e8ec87218bbf83e05bd0d0ae70fa6205737ae2a631bb116fe",
+    "os": "debian 13.2",
+    "repo_digests": [
+     "wordpress@sha256:1e6215749283955d5c9ffea6c297651ed23cdfdbb91677ad7abd705b2682f2cf"
+    ]
+   },
+   "name": "Site e-commerce (WordPress / PHP)",
+   "no_fix": 1335,
+   "owner": "Prestataire web",
+   "ref": "wordpress:6.8-php8.2-apache",
+   "total": 8757
+  },
+  "web-proxy": {
+   "by_priority": {
+    "P1": 2,
+    "P2": 18,
+    "P3": 232,
+    "P4": 454
+   },
+   "criticality": "high",
+   "excepted": 1,
+   "exposure": "internet",
+   "kev": 0,
+   "meta": {
+    "artifact": "nginx:1.27",
+    "artifact_type": "container_image",
+    "created": "2026-10-12T02:17:53",
+    "eosl": false,
+    "image_id": "sha256:1e5f3c5b981a9f91ca91cf13ce87c2eedfc7a083f4f279552084dd08fc477512",
+    "os": "debian 12.11",
+    "repo_digests": [
+     "nginx@sha256:6784fb0834aa7dbbe12e3d7471e69c290df3e6ba810dc38b34ae33d3c1c05f7d"
+    ]
+   },
+   "name": "Reverse proxy du site e-commerce",
+   "no_fix": 443,
+   "owner": "Prestataire hébergement",
+   "ref": "nginx:1.27",
+   "total": 707
+  }
+ },
+ "date": "2026-10-12",
+ "expired_exceptions": [],
+ "feeds": {
+  "age_days": {
+   "epss": 1,
+   "kev": 4
+  },
+  "epss_date": "2026-10-11",
+  "epss_model": "v2026.06.15",
+  "kev_count": 1739,
+  "kev_version": "2026.10.08",
+  "stale": []
+ },
+ "gate": {
+  "facts": {
+   "any_P1_open": 5,
+   "new_P1": 5,
+   "new_P1_internet": 5,
+   "overdue_P1": 0,
+   "overdue_P2": 0,
+   "stale_feeds": 0
+  },
+  "failures": [
+   "new_P1_internet=5"
+  ],
+  "passed": false,
+  "warnings": []
+ },
+ "metrics": {
+  "fixed_total": 0,
+  "mttr_days": {
+   "P1": null,
+   "P2": null,
+   "P3": null,
+   "P4": null
+  },
+  "oldest_open_days": 0,
+  "oldest_open_key": "web-proxy|CVE-2011-3374|apt"
+ },
+ "organisation": "AgriSouss SARL (PME fictive)",
+ "plan_top": [
+  {
+   "asset": "web-app",
+   "cves": [
+    "CVE-2025-11187",
+    "CVE-2025-15467",
+    "CVE-2025-15468",
+    "CVE-2025-15469",
+    "CVE-2025-66199",
+    "CVE-2025-68160",
+    "CVE-2025-69418",
+    "CVE-2025-69419",
+    "CVE-2025-69420",
+    "CVE-2025-69421",
+    "CVE-2026-22795",
+    "CVE-2026-22796"
+   ],
+   "due": "2026-10-19",
+   "fixed": "3.5.4-1~deb13u2",
+   "installed": "3.5.4-1~deb13u1",
+   "kev": 0,
+   "n": 12,
+   "pkg": "libssl3t64",
+   "priority": "P1"
+  },
+  {
+   "asset": "web-app",
+   "cves": [
+    "CVE-2025-11187",
+    "CVE-2025-15467",
+    "CVE-2025-15468",
+    "CVE-2025-15469",
+    "CVE-2025-66199",
+    "CVE-2025-68160",
+    "CVE-2025-69418",
+    "CVE-2025-69419",
+    "CVE-2025-69420",
+    "CVE-2025-69421",
+    "CVE-2026-22795",
+    "CVE-2026-22796"
+   ],
+   "due": "2026-10-19",
+   "fixed": "3.5.4-1~deb13u2",
+   "installed": "3.5.4-1~deb13u1",
+   "kev": 0,
+   "n": 12,
+   "pkg": "openssl",
+   "priority": "P1"
+  },
+  {
+   "asset": "web-app",
+   "cves": [
+    "CVE-2025-11187",
+    "CVE-2025-15467",
+    "CVE-2025-15468",
+    "CVE-2025-15469",
+    "CVE-2025-66199",
+    "CVE-2025-68160",
+    "CVE-2025-69418",
+    "CVE-2025-69419",
+    "CVE-2025-69420",
+    "CVE-2025-69421",
+    "CVE-2026-22795",
+    "CVE-2026-22796"
+   ],
+   "due": "2026-10-19",
+   "fixed": "3.5.4-1~deb13u2",
+   "installed": "3.5.4-1~deb13u1",
+   "kev": 0,
+   "n": 12,
+   "pkg": "openssl-provider-legacy",
+   "priority": "P1"
+  },
+  {
+   "asset": "web-proxy",
+   "cves": [
+    "CVE-2025-15467",
+    "CVE-2025-68160",
+    "CVE-2025-69418",
+    "CVE-2025-69419",
+    "CVE-2025-69420",
+    "CVE-2025-69421",
+    "CVE-2026-22795",
+    "CVE-2026-22796"
+   ],
+   "due": "2026-10-19",
+   "fixed": "3.0.18-1~deb12u2",
+   "installed": "3.0.16-1~deb12u1",
+   "kev": 0,
+   "n": 8,
+   "pkg": "libssl3",
+   "priority": "P1"
+  },
+  {
+   "asset": "web-proxy",
+   "cves": [
+    "CVE-2025-15467",
+    "CVE-2025-68160",
+    "CVE-2025-69418",
+    "CVE-2025-69419",
+    "CVE-2025-69420",
+    "CVE-2025-69421",
+    "CVE-2026-22795",
+    "CVE-2026-22796"
+   ],
+   "due": "2026-10-19",
+   "fixed": "3.0.18-1~deb12u2",
+   "installed": "3.0.16-1~deb12u1",
+   "kev": 0,
+   "n": 8,
+   "pkg": "openssl",
+   "priority": "P1"
+  },
+  {
+   "asset": "web-app",
+   "cves": [
+    "CVE-2026-24481",
+    "CVE-2026-24484",
+    "CVE-2026-24485",
+    "CVE-2026-25576",
+    "CVE-2026-25637",
+    "CVE-2026-25638",
+    "CVE-2026-25794",
+    "CVE-2026-25795",
+    "CVE-2026-25796",
+    "CVE-2026-25797",
+    "CVE-2026-25798",
+    "CVE-2026-25799",
+    "CVE-2026-25897",
+    "CVE-2026-25898",
+    "CVE-2026-25965",
+    "CVE-2026-25966",
+    "CVE-2026-25967",
+    "CVE-2026-25968",
+    "CVE-2026-25969",
+    "CVE-2026-25970",
+    "CVE-2026-25971",
+    "CVE-2026-25982",
+    "CVE-2026-25983",
+    "CVE-2026-25985",
+    "CVE-2026-25986",
+    "CVE-2026-25987",
+    "CVE-2026-25988",
+    "CVE-2026-25989",
+    "CVE-2026-26066",
+    "CVE-2026-26283",
+    "CVE-2026-26284",
+    "CVE-2026-26983",
+    "CVE-2026-27798",
+    "CVE-2026-27799"
+   ],
+   "due": "2026-11-11",
+   "fixed": "8:7.1.1.43+dfsg1-1+deb13u6",
+   "installed": "8:7.1.1.43+dfsg1-1+deb13u3",
+   "kev": 0,
+   "n": 34,
+   "pkg": "imagemagick-7-common",
+   "priority": "P2"
+  },
+  {
+   "asset": "web-app",
+   "cves": [
+    "CVE-2026-24481",
+    "CVE-2026-24484",
+    "CVE-2026-24485",
+    "CVE-2026-25576",
+    "CVE-2026-25637",
+    "CVE-2026-25638",
+    "CVE-2026-25794",
+    "CVE-2026-25795",
+    "CVE-2026-25796",
+    "CVE-2026-25797",
+    "CVE-2026-25798",
+    "CVE-2026-25799",
+    "CVE-2026-25897",
+    "CVE-2026-25898",
+    "CVE-2026-25965",
+    "CVE-2026-25966",
+    "CVE-2026-25967",
+    "CVE-2026-25968",
+    "CVE-2026-25969",
+    "CVE-2026-25970",
+    "CVE-2026-25971",
+    "CVE-2026-25982",
+    "CVE-2026-25983",
+    "CVE-2026-25985",
+    "CVE-2026-25986",
+    "CVE-2026-25987",
+    "CVE-2026-25988",
+    "CVE-2026-25989",
+    "CVE-2026-26066",
+    "CVE-2026-26283",
+    "CVE-2026-26284",
+    "CVE-2026-26983",
+    "CVE-2026-27798",
+    "CVE-2026-27799"
+   ],
+   "due": "2026-11-11",
+   "fixed": "8:7.1.1.43+dfsg1-1+deb13u6",
+   "installed": "8:7.1.1.43+dfsg1-1+deb13u3",
+   "kev": 0,
+   "n": 34,
+   "pkg": "libmagickcore-7.q16-10",
+   "priority": "P2"
+  },
+  {
+   "asset": "web-app",
+   "cves": [
+    "CVE-2026-24481",
+    "CVE-2026-24484",
+    "CVE-2026-24485",
+    "CVE-2026-25576",
+    "CVE-2026-25637",
+    "CVE-2026-25638",
+    "CVE-2026-25794",
+    "CVE-2026-25795",
+    "CVE-2026-25796",
+    "CVE-2026-25797",
+    "CVE-2026-25798",
+    "CVE-2026-25799",
+    "CVE-2026-25897",
+    "CVE-2026-25898",
+    "CVE-2026-25965",
+    "CVE-2026-25966",
+    "CVE-2026-25967",
+    "CVE-2026-25968",
+    "CVE-2026-25969",
+    "CVE-2026-25970",
+    "CVE-2026-25971",
+    "CVE-2026-25982",
+    "CVE-2026-25983",
+    "CVE-2026-25985",
+    "CVE-2026-25986",
+    "CVE-2026-25987",
+    "CVE-2026-25988",
+    "CVE-2026-25989",
+    "CVE-2026-26066",
+    "CVE-2026-26283",
+    "CVE-2026-26284",
+    "CVE-2026-26983",
+    "CVE-2026-27798",
+    "CVE-2026-27799"
+   ],
+   "due": "2026-11-11",
+   "fixed": "8:7.1.1.43+dfsg1-1+deb13u6",
+   "installed": "8:7.1.1.43+dfsg1-1+deb13u3",
+   "kev": 0,
+   "n": 34,
+   "pkg": "libmagickwand-7.q16-10",
+   "priority": "P2"
+  },
+  {
+   "asset": "web-app",
+   "cves": [
+    "CVE-2026-56362",
+    "CVE-2026-56366",
+    "CVE-2026-56372",
+    "CVE-2026-56373",
+    "CVE-2026-56374",
+    "CVE-2026-56375",
+    "CVE-2026-61464",
+    "CVE-2026-61465",
+    "CVE-2026-61857",
+    "CVE-2026-61858",
+    "CVE-2026-61859",
+    "CVE-2026-61860",
+    "CVE-2026-61861",
+    "CVE-2026-61862",
+    "CVE-2026-61863",
+    "CVE-2026-61864",
+    "CVE-2026-61865",
+    "CVE-2026-61866",
+    "CVE-2026-61867",
+    "CVE-2026-61868",
+    "CVE-2026-61869",
+    "CVE-2026-61870",
+    "CVE-2026-61871",
+    "CVE-2026-61872"
+   ],
+   "due": "2026-11-11",
+   "fixed": "8:7.1.1.43+dfsg1-1+deb13u12",
+   "installed": "8:7.1.1.43+dfsg1-1+deb13u3",
+   "kev": 0,
+   "n": 24,
+   "pkg": "imagemagick-7-common",
+   "priority": "P2"
+  },
+  {
+   "asset": "web-app",
+   "cves": [
+    "CVE-2026-56362",
+    "CVE-2026-56366",
+    "CVE-2026-56372",
+    "CVE-2026-56373",
+    "CVE-2026-56374",
+    "CVE-2026-56375",
+    "CVE-2026-61464",
+    "CVE-2026-61465",
+    "CVE-2026-61857",
+    "CVE-2026-61858",
+    "CVE-2026-61859",
+    "CVE-2026-61860",
+    "CVE-2026-61861",
+    "CVE-2026-61862",
+    "CVE-2026-61863",
+    "CVE-2026-61864",
+    "CVE-2026-61865",
+    "CVE-2026-61866",
+    "CVE-2026-61867",
+    "CVE-2026-61868",
+    "CVE-2026-61869",
+    "CVE-2026-61870",
+    "CVE-2026-61871",
+    "CVE-2026-61872"
+   ],
+   "due": "2026-11-11",
+   "fixed": "8:7.1.1.43+dfsg1-1+deb13u12",
+   "installed": "8:7.1.1.43+dfsg1-1+deb13u3",
+   "kev": 0,
+   "n": 24,
+   "pkg": "libmagickcore-7.q16-10",
+   "priority": "P2"
+  }
+ ],
+ "plan_total": 257,
+ "run": {
+  "by_priority": {
+   "P1": 5,
+   "P2": 96,
+   "P3": 993,
+   "P4": 2187
+  },
+  "date": "2026-10-12",
+  "escalated": 0,
+  "excepted": 6259,
+  "fixed": 0,
+  "new": 9540,
+  "open": 3281,
+  "overdue": 0,
+  "reopened": 0
+ },
+ "sla_days": {
+  "P1": 7,
+  "P2": 30,
+  "P3": 90,
+  "P4": 180
+ },
+ "thresholds": {
+  "cvss_high": 7.0,
+  "cvss_total": 9.0,
+  "epss_likely": 0.1
+ },
+ "totals": {
+  "actionable": 3281,
+  "actionable_distinct_cves": 992,
+  "by_priority": {
+   "P1": 5,
+   "P2": 96,
+   "P3": 993,
+   "P4": 2187
+  },
+  "distinct_cves": 7251,
+  "epss_likely": 19,
+  "excepted": 6259,
+  "findings": 9540,
+  "kev": 3,
+  "kev_actionable": 0,
+  "no_fix": 1794,
+  "scanner_severity": {
+   "CRITICAL": 76,
+   "HIGH": 1349,
+   "LOW": 1950,
+   "MEDIUM": 6020,
+   "UNKNOWN": 145
+  }
+ }
+}

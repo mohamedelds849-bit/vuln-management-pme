@@ -1,0 +1,1 @@
+{"SchemaVersion":2,"CreatedAt":"2026-10-12T02:22:44.7580631Z","ArtifactName":"data/manifests","ArtifactType":"filesystem","Metadata":{},"Results":[{"Target":"requirements.txt","Class":"lang-pkgs","Type":"pip","Vulnerabilities":[]}]}

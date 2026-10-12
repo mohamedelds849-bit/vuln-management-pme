@@ -1,0 +1,78 @@
+# Vulnerability management policy — AgriSouss SARL (fictitious Moroccan SME, ~15 people,
+# e-commerce site PHP/MariaDB at an external hosting provider, Windows workstations).
+# Everything the pipeline decides comes from this file: no priority is hard-coded.
+version: 1
+organisation: "AgriSouss SARL (PME fictive)"
+
+# The assets = the container images of the web stack, as a hosting provider would run them,
+# plus the internal order portal (appsec-devsecops-pipeline). Images are REAL public images,
+# scanned by Trivy; the digests scanned are recorded in each scan's Metadata.RepoDigests.
+assets:
+  - id: web-proxy
+    name: "Reverse proxy du site e-commerce"
+    ref: "nginx:1.27"
+    scan: data/scans/nginx_1.27.json
+    exposure: internet
+    criticality: high
+    owner: "Prestataire hébergement"
+  - id: web-app
+    name: "Site e-commerce (WordPress / PHP)"
+    ref: "wordpress:6.8-php8.2-apache"
+    scan: data/scans/wordpress_6.8-php8.2-apache.json
+    exposure: internet
+    criticality: high
+    owner: "Prestataire web"
+  - id: db
+    name: "Base de données commandes et clients"
+    ref: "mariadb:11.4"
+    scan: data/scans/mariadb_11.4.json
+    exposure: internal          # never reachable from Internet, only from web-app
+    criticality: high           # personal data of customers (loi 09-08)
+    owner: "Prestataire hébergement"
+  - id: portal-deps
+    name: "Portail interne de commandes (dépendances Python)"
+    ref: "data/manifests/requirements.txt (copie de appsec-devsecops-pipeline)"
+    scan: data/scans/fs_appsec.json
+    exposure: internal
+    criticality: medium
+    owner: "Développeur interne"
+
+# Remediation deadlines, in days from first detection. P1 = 7 days is stricter than
+# CISA BOD 22-01 (2 weeks for new KEV) because an SME has few assets and no change board.
+sla_days: {P1: 7, P2: 30, P3: 90, P4: 180}
+
+thresholds:
+  epss_likely: 0.10    # EPSS >= 10 % chance of exploitation in the next 30 days
+  cvss_total: 9.0      # technical impact "total"
+  cvss_high: 7.0       # technical impact "high"
+
+# CI gate: when the pipeline must go red.
+gate:
+  fail_on: [overdue_P1, new_P1_internet]
+  warn_on: [overdue_P2, stale_feeds]
+
+# Exceptions: every one has an owner, a written justification and an expiry date.
+# status: not_affected (the vulnerable code cannot run here) | accepted (risk accepted,
+# with a reason) | false_positive (scanner error). Exported as OpenVEX. Expired -> reopened.
+exceptions:
+  - cve: "*"                      # component-level rule: every CVE reported on this package
+    asset: web-app
+    package: linux-libc-dev
+    status: not_affected
+    justification: >
+      linux-libc-dev contient uniquement les en-têtes du noyau Linux (fichiers .h servant à
+      compiler) ; aucun code noyau ne s'exécute depuis ce paquet. Un conteneur utilise le
+      noyau de l'hôte : les CVE noyau (dont 3 présentes au CISA KEV le 2026-10-12) se traitent
+      sur l'hôte avec l'hébergeur, suivi séparé. Règle revue à chaque expiration.
+    owner: "Prestataire hébergement"
+    expires: 2027-01-31
+  - cve: CVE-2016-2781
+    asset: web-proxy
+    package: coreutils
+    status: accepted
+    justification: >
+      Debian a classé cette CVE de 2016 « will_not_fix » (contournement local de chroot par
+      coreutils, sévérité basse) ; aucun utilisateur interactif dans le conteneur nginx.
+      Risque accepté, revu à chaque renouvellement.
+    owner: "Responsable informatique"
+    expires: 2027-04-30
