@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<title>Gestion des vulnérabilités — {{ s.organisation }} — {{ s.date }}</title>
+<style>
+body{font-family:Segoe UI,Calibri,Arial,sans-serif;color:#1f2933;max-width:1100px;margin:24px auto;padding:0 16px;line-height:1.4}
+h1{color:#14243b;font-size:24px;margin-bottom:2px}h2{color:#14243b;border-bottom:2px solid #1f6fb2;padding-bottom:4px;margin-top:28px;font-size:18px}
+h3{font-size:15px;margin-bottom:4px}.sub{color:#56616e;margin-top:0}
+.cards{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}.card{flex:1 1 150px;background:#eaf3fb;border-left:4px solid #1f6fb2;padding:10px 12px;border-radius:4px}
+.card b{display:block;font-size:26px;color:#14243b}.card span{font-size:12px;color:#56616e}
+.P1{border-left-color:#b3261e}.P2{border-left-color:#d97706}.P3{border-left-color:#1f6fb2}.P4{border-left-color:#5b6773}
+.tag{display:inline-block;padding:1px 7px;border-radius:3px;font-size:12px;font-weight:600;color:#fff}
+.tP1{background:#b3261e}.tP2{background:#d97706}.tP3{background:#1f6fb2}.tP4{background:#5b6773}
+table{border-collapse:collapse;width:100%;font-size:13px;margin:8px 0}th,td{border:1px solid #d8dee5;padding:4px 7px;text-align:left;vertical-align:top}
+th{background:#f3f6f9}.num{text-align:right}.ok{color:#1e7b4a;font-weight:600}.ko{color:#b3261e;font-weight:600}.warn{color:#d97706;font-weight:600}
+.box{background:#fff8e6;border-left:4px solid #d97706;padding:8px 12px;margin:10px 0;font-size:13px}
+.small{font-size:12px;color:#56616e}code{background:#f3f6f9;padding:0 3px;font-size:12px}
+</style></head><body>
+<h1>Gestion des vulnérabilités — {{ s.organisation }}</h1>
+<p class="sub">Rapport du {{ s.date }} · données d'exploitation : CISA KEV {{ s.feeds.kev_version }} ({{ s.feeds.kev_count }} CVE), EPSS du {{ s.feeds.epss_date }} · scanner : Trivy</p>
+
+<h2>1. L'essentiel pour la direction</h2>
+<div class="cards">
+ <div class="card"><b>{{ s.totals.findings | num }}</b><span>vulnérabilités trouvées par le scanner (toutes sévérités)</span></div>
+ <div class="card P1"><b>{{ s.totals.by_priority.P1 }}</b><span>P1 — {{ labels.P1 }} (sous {{ s.sla_days.P1 }} jours)</span></div>
+ <div class="card P2"><b>{{ s.totals.by_priority.P2 }}</b><span>P2 — {{ labels.P2 }} (sous {{ s.sla_days.P2 }} jours)</span></div>
+ <div class="card P3"><b>{{ s.totals.by_priority.P3 }}</b><span>P3 — {{ labels.P3 }} (sous {{ s.sla_days.P3 }} jours)</span></div>
+ <div class="card P4"><b>{{ s.totals.by_priority.P4 }}</b><span>P4 — {{ labels.P4 }} (sous {{ s.sla_days.P4 }} jours)</span></div>
+</div>
+<p>Le scanner remonte <b>{{ s.totals.findings | num }}</b> vulnérabilités ({{ s.totals.distinct_cves | num }} CVE distinctes, une même CVE touchant souvent plusieurs paquets) sur {{ s.assets | length }} actifs. Toutes ne se valent pas :
+<b>{{ s.totals.by_priority.P1 + s.totals.by_priority.P2 }}</b> demandent une action ce mois-ci, parce qu'elles sont
+<b>exploitées dans la nature</b> (catalogue CISA KEV : {{ s.totals.kev_actionable }} à traiter, {{ s.totals.kev }} au total dont {{ s.totals.kev - s.totals.kev_actionable }} documentées comme non applicables)
+ou <b>probablement exploitées sous 30 jours</b> (EPSS ≥ {{ (s.thresholds.epss_likely * 100) | int }} % : {{ s.totals.epss_likely }}) sur des actifs exposés à Internet.
+{{ s.totals.no_fix }} n'ont pas encore de correctif éditeur : on surveille et on compense, on ne peut pas « patcher ».</p>
+<p><b>Ce qu'il faut faire en premier :</b> {{ s.plan_total }} mises à jour de paquets couvrent toutes les vulnérabilités corrigeables ; les {{ s.plan_top | length }} premières ci-dessous ferment le plus de risque.</p>
+<table><tr><th>Prio</th><th>Échéance</th><th>Actif</th><th>Mettre à jour</th><th>Vers</th><th class="num">CVE fermées</th><th class="num">dont KEV</th></tr>
+{% for g in s.plan_top %}<tr><td><span class="tag t{{ g.priority }}">{{ g.priority }}</span></td><td>{{ g.due or '' }}</td><td>{{ s.assets[g.asset].name }}</td><td><code>{{ g.pkg }}</code> {{ g.installed }}</td><td>{{ g.fixed }}</td><td class="num">{{ g.n }}</td><td class="num">{{ g.kev }}</td></tr>
+{% endfor %}</table>
+<p><b>Verdict CI :</b> {% if s.gate.passed %}<span class="ok">PASS</span>{% else %}<span class="ko">FAIL</span> — {{ s.gate.failures | join(', ') }}{% endif %}
+{% if s.gate.warnings %}<span class="warn"> · avertissements : {{ s.gate.warnings | join(', ') }}</span>{% endif %}
+{% if s.feeds.stale %}<span class="warn"> · flux obsolètes : {{ s.feeds.stale | join(', ') }}</span>{% endif %}</p>
+{% if s.expired_exceptions %}<div class="box">Exceptions <b>expirées</b> (à renouveler ou à corriger) : {{ s.expired_exceptions | join(', ') }}</div>{% endif %}
+
+<h2>2. Par actif</h2>
+<table><tr><th>Actif</th><th>Référence scannée</th><th>Exposition</th><th>Criticité</th><th class="num">Trouvées</th><th class="num">P1</th><th class="num">P2</th><th class="num">P3</th><th class="num">P4</th><th class="num">KEV</th><th class="num">Sans correctif</th><th class="num">Exceptions</th></tr>
+{% for id, a in s.assets.items() %}<tr><td><b>{{ a.name }}</b><br><span class="small">{{ id }} · {{ a.owner }}</span></td><td><code>{{ a.ref }}</code><br><span class="small">{{ a.meta.os }} {% if a.meta.eosl %}<span class="ko">(fin de vie)</span>{% endif %}</span></td><td>{{ a.exposure }}</td><td>{{ a.criticality }}</td><td class="num">{{ a.total | num }}</td><td class="num">{{ a.by_priority.P1 }}</td><td class="num">{{ a.by_priority.P2 }}</td><td class="num">{{ a.by_priority.P3 }}</td><td class="num">{{ a.by_priority.P4 }}</td><td class="num">{{ a.kev }}</td><td class="num">{{ a.no_fix }}</td><td class="num">{{ a.excepted }}</td></tr>
+{% endfor %}</table>
+
+<h2>3. Suivi dans le temps</h2>
+<table><tr><th>Ce run</th><th class="num">Nouvelles</th><th class="num">Escaladées</th><th class="num">Corrigées</th><th class="num">Réapparues</th><th class="num">Ouvertes</th><th class="num">En retard (SLA dépassé)</th><th class="num">Sous exception</th></tr>
+<tr><td>{{ s.run.date }}</td><td class="num">{{ s.run.new | num }}</td><td class="num">{{ s.run.escalated }}</td><td class="num">{{ s.run.fixed | num }}</td><td class="num">{{ s.run.reopened }}</td><td class="num">{{ s.run.open | num }}</td><td class="num {% if s.run.overdue %}ko{% endif %}">{{ s.run.overdue }}</td><td class="num">{{ s.run.excepted }}</td></tr></table>
+<p class="small">Délai moyen de correction (jours, sur les vulnérabilités corrigées) :
+{% for p in priorities %}{{ p }} = {{ s.metrics.mttr_days[p] if s.metrics.mttr_days[p] is not none else 'n/a' }}{% if not loop.last %} · {% endif %}{% endfor %}
+· corrigées au total : {{ s.metrics.fixed_total }} · plus ancienne ouverte : {{ s.metrics.oldest_open_days }} jours.</p>
+
+<h2>4. Annexe technique — les {{ top | length }} premières vulnérabilités à traiter (sur {{ n_actionable | num }})</h2>
+<table><tr><th>Prio</th><th>CVE</th><th>Actif</th><th>Paquet</th><th>Installé → corrigé</th><th class="num">CVSS</th><th class="num">EPSS</th><th>KEV</th><th>Action</th><th>Échéance</th><th>Pourquoi</th></tr>
+{% for f in top %}<tr><td><span class="tag t{{ f.priority }}">{{ f.priority }}</span></td><td><a href="https://nvd.nist.gov/vuln/detail/{{ f.cve }}">{{ f.cve }}</a></td><td>{{ f.asset_id }}</td><td><code>{{ f.pkg }}</code></td><td>{{ f.installed }} → {{ f.fixed or '—' }}</td><td class="num">{{ f.cvss if f.cvss is not none else '' }}</td><td class="num">{{ f.epss | pct }}</td><td>{% if f.kev %}<span class="ko">oui</span>{% endif %}</td><td>{{ f.action }}</td><td>{{ f.due }}</td><td class="small">{{ f.reasons | join(' ; ') }}</td></tr>
+{% endfor %}</table>
+
+<h2>5. Exceptions documentées ({{ excepted | length }} règle(s), {{ s.totals.excepted | num }} vulnérabilités couvertes)</h2>
+<p class="small">Chaque exception a un propriétaire, une justification et une date d'expiration ; elle est exportée en OpenVEX (<code>openvex.json</code>). Une exception expirée rouvre la vulnérabilité.</p>
+<table><tr><th>Actif</th><th>Paquet</th><th class="num">CVE couvertes</th><th class="num">dont KEV</th><th>Statut</th><th>Justification</th><th>Responsable</th><th>Expire</th></tr>
+{% for g in excepted %}<tr><td>{{ g.asset }}</td><td><code>{{ g.pkg }}</code></td><td class="num">{{ g.n | num }}</td><td class="num">{{ g.kev }}</td><td>{{ g.status }}</td><td class="small">{{ g.justification }}{% if g.n <= 5 %}<br>{{ g.cves | join(', ') }}{% else %}<br>ex. {{ g.cves[:4] | join(', ') }}…{% endif %}</td><td>{{ g.owner }}</td><td>{{ g.expires }}</td></tr>
+{% endfor %}</table>
+
+<h2>6. Méthode</h2>
+<p class="small">Scanner : Trivy (images et dépendances). Enrichissement : CISA KEV (vulnérabilités exploitées, catalogue {{ s.feeds.kev_version }}) et FIRST EPSS (probabilité d'exploitation sous 30 jours, modèle {{ s.feeds.epss_model }}).
+Décision inspirée de SSVC (CISA) : exploitation (KEV / EPSS ≥ {{ (s.thresholds.epss_likely * 100) | int }} % / autre) × exposition de l'actif (Internet / interne / isolé) × impact (CVSS ≥ {{ s.thresholds.cvss_total }} total, ≥ {{ s.thresholds.cvss_high }} élevé) × criticité métier → P1 Agir / P2 Traiter / P3 Planifier / P4 Suivre, avec un délai (SLA) par niveau : P1 {{ s.sla_days.P1 }} j, P2 {{ s.sla_days.P2 }} j, P3 {{ s.sla_days.P3 }} j, P4 {{ s.sla_days.P4 }} j.
+Répartition brute du scanner : {% for k, v in s.totals.scanner_severity.items() %}{{ k }} {{ v }}{% if not loop.last %}, {% endif %}{% endfor %}.
+Limites : le scanner ne voit que les paquets connus (pas la configuration, pas le code maison) ; EPSS est une probabilité, pas une certitude ; une CVE absente du KEV peut quand même être exploitée.</p>
+</body></html>

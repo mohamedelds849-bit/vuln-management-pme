@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+Thumbs.db
+# feeds are downloaded (KEV ~2 MB, EPSS ~3 MB) ; a dated snapshot is kept in tests/fixtures
+data/feeds/*.json
+data/feeds/*.gz
+data/feeds/*.csv
+# reports are rebuilt by `python -m vmp run` ; one example run is kept in reports/example/
+reports/*
+!reports/example/
+!reports/example/**
+work/
