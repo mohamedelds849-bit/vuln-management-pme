@@ -10,7 +10,7 @@
 | Second run (simulated) | nginx scan without its OpenSSL/curl findings, `--today 2026-11-01` | 76 fixed, MTTR 20 days, 3 P1 overdue (WordPress OpenSSL), gate FAIL `overdue_P1=3`, feeds flagged stale |
 | Tests | `python -m pytest -q` | **102 passed** (unit on every module, decision table, ledger lifecycle, HTML escaping, end-to-end on the committed real scans with a dated feed snapshot, policy-tamper mutation) |
 | Report | headless Chrome screenshot of `reports/report.html` | renders; `reports/example/report.png` |
-| CI | — | **not run yet**; the `weekly` job (Trivy image by digest, feed download, gate) is unverified until the first green run |
+| CI | push → run 38196458470 | `tests` green in 17 s; `weekly` job: Trivy (image by digest) rescanned the 3 images in CI, KEV + EPSS downloaded, **same numbers as locally** (9 540 / 3 281 / P1 5), gate **FAIL `new_P1_internet=5`** → job red as designed; reports + ledger uploaded as artifact |
 
 ## Problems found and fixed during the build
 
@@ -59,7 +59,8 @@
 
 ## Recommendations (next steps)
 
-1. Run the `weekly` workflow once and paste the run id and results in the README.
+1. Patch or document the OpenSSL P1 in the ledger so the weekly gate badge goes green, then
+   keep the badge honest week after week.
 2. Feed Trivy's own `--vex` with `reports/openvex.json` so the scanner itself hides documented
    exceptions (closes the loop).
 3. Add a second scanner format only when it has really been run (Grype on the same images).

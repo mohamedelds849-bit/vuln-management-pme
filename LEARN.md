@@ -149,7 +149,9 @@ Job `tests` : 102 tests, hors ligne. Job `weekly` : chaque lundi, Trivy (image o
 épinglée par digest, à cause de la compromission de mars 2026) rescanne les 3 images,
 télécharge le KEV et l'EPSS du jour, lance le pipeline, publie rapport et registre en
 artefacts, et le job est rouge si un P1 est en retard ou si un nouveau P1 apparaît sur un
-actif Internet. Au 12 octobre, ce job n'a pas encore tourné.
+actif Internet. Premier run réel le 12 octobre (run 38196458470) : mêmes chiffres qu'en local
+et gate rouge sur `new_P1_internet=5`, comme prévu. Le badge reste rouge tant que le P1
+OpenSSL n'est pas corrigé ou documenté : rouge veut dire « du travail cette semaine ».
 
 **Q12. Qu'est-ce que vos tests ont trouvé ?**
 Une injection HTML dans le rapport : `select_autoescape` se base sur l'extension du fichier

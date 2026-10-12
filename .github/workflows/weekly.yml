@@ -1,15 +1,11 @@
-name: vuln-management
+name: weekly-gate
 
-# Three jobs:
-#   tests   - unit + end-to-end tests on the committed scans and a dated feed snapshot
-#   weekly  - REAL run: Trivy (official image, pinned by digest) rescans the 3 public images,
-#             today's CISA KEV + EPSS are downloaded, the pipeline decides, reports are
-#             uploaded as artifacts and the gate decides the job's colour.
-#   The ledger produced by the weekly run is uploaded too (the repo is not written from CI).
+# The REAL weekly run: Trivy (official image, pinned by digest) rescans the 3 public images,
+# today's CISA KEV + EPSS are downloaded, the pipeline decides, reports + ledger are uploaded
+# as artifacts, and the job's colour is the gate (red = a P1 is overdue or appeared on an
+# internet-facing asset = there is work to do this week). Unit tests live in tests.yml.
 
 on:
-  push:
-  pull_request:
   workflow_dispatch:
   schedule:
     - cron: "23 6 * * 1"   # Monday 06:23 UTC: new CVEs, new KEV entries, new EPSS scores every week
@@ -25,19 +21,7 @@ env:
   TRIVY_IMAGE: "aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa"
 
 jobs:
-  tests:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: "3.11"
-      - run: python -m pip install -r requirements-dev.txt
-      - run: python -m pytest -q
-
   weekly:
-    needs: tests
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -63,11 +47,14 @@ jobs:
       - name: Decide, update the ledger, write the reports, apply the gate
         id: run
         run: python -m vmp run --policy policy.yml --feeds data/feeds --ledger data/ledger.json --out reports
+      - name: Gate result in the job summary
+        if: always()
+        run: python scripts/step_summary.py >> "$GITHUB_STEP_SUMMARY"
       - name: Upload reports and ledger
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: vuln-management-${{ github.run_id }}
+          name: weekly-gate-${{ github.run_id }}
           path: |
             reports/
             data/ledger.json

@@ -15,9 +15,16 @@ the hosting provider, OpenVEX for documented exceptions, and a red/green CI gate
 > choices and its exceptions are mine.
 
 **Author:** Mohamed Elansari — cybersecurity engineering student (Universiapolis, Agadir)
-**Status (2026-10-12):** pipeline, 102 tests, one real run and a simulated second run are
-done locally. **The GitHub Actions `weekly` job has not run yet** (Trivy image by digest +
-feed download + gate): unverified until the first run is green.
+[![tests](https://github.com/mohamedelds849-bit/vuln-management-pme/actions/workflows/tests.yml/badge.svg)](https://github.com/mohamedelds849-bit/vuln-management-pme/actions/workflows/tests.yml)
+[![weekly gate](https://github.com/mohamedelds849-bit/vuln-management-pme/actions/workflows/weekly.yml/badge.svg)](https://github.com/mohamedelds849-bit/vuln-management-pme/actions/workflows/weekly.yml)
+
+**Status (2026-10-12):** pipeline, 102 tests, one real run locally, one real run in CI.
+GitHub Actions run [38196458470](https://github.com/mohamedelds849-bit/vuln-management-pme/actions/runs/38196458470):
+`tests` green (17 s); the real job rescanned the three images with Trivy (official image by
+digest, 50 s), downloaded that day's KEV and EPSS, reproduced the local numbers exactly and
+**went red on the gate** (`new_P1_internet=5`), which is the designed behaviour. The weekly
+gate badge is therefore **red until the OpenSSL P1 is patched or documented**: red means
+"there is work to do this week", not "the pipeline is broken".
 
 ---
 
@@ -59,7 +66,8 @@ vmp/__main__.py         python -m vmp run | fetch-feeds | gate
 data/scans/*.json       the real Trivy scans of 2026-10-12, slimmed (scripts/slim_scan.py) with the digests scanned
 data/ledger.json        the ledger after the real run
 tests/                  102 pytest tests; tests/fixtures/feeds = dated KEV/EPSS snapshot (CVEs of the scans only)
-.github/workflows/vuln-management.yml   tests, then a weekly real rescan + fresh feeds + gate
+.github/workflows/tests.yml     102 tests on every push (badge)
+.github/workflows/weekly.yml    Monday 06:23 UTC + manual: real rescan (Trivy by digest) + fresh feeds + gate = job colour
 docs/METHOD.md          every rule and threshold, with sources
 LEARN.md                (FR) how it works, the story of the kernel-headers noise, interview Q&A, CV lines
 REVIEW.md               what was really run, bugs found by the tests, honest limits
